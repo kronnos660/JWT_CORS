@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Atividade Prática - Frontend GitHub Pages (JWT + CORS)</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f4f6f9;
+        }
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 400px;
+            width: 100%;
+        }
+        h2 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .btn {
+            background-color: #0066cc;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 8px 0;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            width: 100%;
+            transition: background-color 0.2s;
+        }
+        .btn:hover {
+            background-color: #0052a3;
+        }
+        .btn-action {
+            background-color: #28a745;
+        }
+        .btn-action:hover {
+            background-color: #218838;
+        }
+        #card {
+            width: 120px;
+            height: 120px;
+            background-color: gray;
+            margin: 20px auto;
+            border-radius: 8px;
+            transition: background-color 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            box-shadow: inset 0 0 5px rgba(0,0,0,0.2);
+        }
+        #status {
+            font-size: 14px;
+            color: #555;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Demonstração JWT + CORS</h2>
+        
+        <button id="btnLogin" class="btn">1. Fazer Login</button>
+        <button id="btnCor" class="btn btn-action">2. Mudar Cor do Card</button>
+        
+        <div id="card">CARD</div>
+        
+        <p id="status">Status: Não autenticado</p>
+    </div>
+
+    <script>
+        let tokenJWT = '';
+
+        // 1. Fazer Login e obter o JWT
+        document.getElementById('btnLogin').addEventListener('click', () => {
+            fetch('http://localhost:3000/api/login', { 
+                method: 'POST' 
+            })
+            .then(res => {
+                if (!res.ok) throw new Error('Erro ao autenticar');
+                return res.json();
+            })
+            .then(dados => {
+                tokenJWT = dados.token;
+                document.getElementById('status').innerText = 'Status: Autenticado com Sucesso!';
+                document.getElementById('status').style.color = 'green';
+            })
+            .catch(err => {
+                console.error('Erro no Login:', err);
+                document.getElementById('status').innerText = 'Status: Erro na Autenticação!';
+                document.getElementById('status').style.color = 'red';
+            });
+        });
+
+        // 2. Chamar rota protegida enviando o JWT
+        document.getElementById('btnCor').addEventListener('click', () => {
+            fetch('http://localhost:3000/api/cor', {
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + tokenJWT
+                }
+            })
+            .then(res => {
+                if (!res.ok) throw new Error('Acesso negado ou token inválido');
+                return res.json();
+            })
+            .then(dados => {
+                document.getElementById('card').style.backgroundColor = dados.cor;
+            })
+            .catch(err => alert(err.message));
+        });
+    </script>
+</body>
+</html>
